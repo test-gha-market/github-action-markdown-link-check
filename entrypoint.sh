@@ -18,18 +18,28 @@ declare -a COMMAND_DIRS COMMAND_FILES
 declare -a COMMAND_FILES
 
 USE_QUIET_MODE="$1"
+echo "::set-output name=USE_QUIET_MODE::$1"
 USE_VERBOSE_MODE="$2"
+echo "::set-output name=USE_VERBOSE_MODE::$2"
 CONFIG_FILE="$3"
+echo "::set-output name=CONFIG_FILE::$3"
 FOLDER_PATH="$4"
+echo "::set-output name=FOLDER_PATH::$4"
 MAX_DEPTH="$5"
+echo "::set-output name=MAX_DEPTH::$5"
 CHECK_MODIFIED_FILES="$6"
+echo "::set-output name=CHECK_MODIFIED_FILES::$6"
 BASE_BRANCH="$7"
+echo "::set-output name=BASE_BRANCH::$7"
+
 if [ -z "$8" ]; then
    FILE_EXTENSION=".md"
 else
    FILE_EXTENSION="$8"
 fi
+echo "::set-output name=FILE_EXTENSION::$8"
 FILE_PATH="$9"
+echo "::set-output name=FILE_PATH::$9"
 
 if [ -f "$CONFIG_FILE" ]; then
    echo -e "${BLUE}Using markdown-link-check configuration file: ${YELLOW}$CONFIG_FILE${NC}"
@@ -90,6 +100,11 @@ check_errors () {
 
    if [ -e error.txt ] ; then
       if grep -q "ERROR:" error.txt; then
+         MLC_OUTPUT=`cat error.txt`
+         MLC_OUTPUT="${MLC_OUTPUT//'%'/'%25'}"
+         MLC_OUTPUT="${MLC_OUTPUT//$'\n'/'%0A'}"
+         MLC_OUTPUT="${MLC_OUTPUT//$'\r'/'%0D'}"
+         echo "::set-output name=MLC_OUTPUT::$MLC_OUTPUT"
          echo -e "${YELLOW}=========================> MARKDOWN LINK CHECK <=========================${NC}"
          cat error.txt
          printf "\n"
@@ -104,6 +119,8 @@ check_errors () {
       fi
    else
       echo -e "${GREEN}All good!${NC}"
+      MLC_OUTPUT="All good!"
+      echo "::set-output name=MLC_OUTPUT::$MLC_OUTPUT"
    fi
 
 }
